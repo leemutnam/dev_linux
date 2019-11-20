@@ -1,9 +1,23 @@
 ---
 - name: setup for the Ansible's Environment
   hosts: localhost
+  become: yes
+  become_method: sudo
   gather_facts: no
+  var:
+    r_password: insert to password
+    repo_url: insert to url of git repository
 
   tasks:
+    - name: change root passwd
+      user:
+        name: 'root'
+        password: "{{ '{{r_password}}' | password_hash('sha512') }}"
+    - name: edit sshd-config
+      lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PermitRootLogin' line='PermitRootLogin yes'
+    - lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PasswordAuthentication' line='PasswordAuthentication yes'
+    - name: reload ssh service
+      service: name=sshd state=reloaded
     - name: set up ssh keygen
       shell: |
         mkdir /root/.ssh
@@ -17,3 +31,17 @@
         requirements: requirements.txt
         chdir: /vagrant
         state: forcereinstall
+    - name: change permission
+      become: yes
+      shell: chmod 600 /root/.ssh/id_rsa
+    - name: clone a repository
+      become: yes
+      git:
+        repo: '{{repo_url}}'
+        version: master
+        force: yes
+        clone: yes
+        dest: /opt/examples
+        depth: 1
+        accept_hostkey: yes
+        key_file: /root/.ssh/id_rsa
