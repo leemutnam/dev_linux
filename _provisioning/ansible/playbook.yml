@@ -2,17 +2,20 @@
 - name: setup for the Ansible's Environment
   hosts: localhost
   become: yes
+  become_user: root
   become_method: sudo
   gather_facts: no
-  var:
-    r_password: insert to password
-    repo_url: insert to url of git repository
+  vars:
+    r_name: root
+    r_password: 1234
+    repo_url: git@github.com:leemutnam/dev_linux.git
+    project_path: /opt/dev_linux
 
   tasks:
     - name: change root passwd
       user:
-        name: 'root'
-        password: "{{ '{{r_password}}' | password_hash('sha512') }}"
+        name: "{{r_name}}"
+        password: "{{r_password | password_hash('sha512')}}"
     - name: edit sshd-config
       lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PermitRootLogin' line='PermitRootLogin yes'
     - lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PasswordAuthentication' line='PasswordAuthentication yes'
@@ -22,6 +25,8 @@
       shell: |
         mkdir /root/.ssh
         cp /vagrant/configuration/root/.ssh/id_rsa /root/.ssh/id_rsa
+      args:
+        warn: false
     - name: install requirement packages
       yum:
         name: gcc, python36, python3-devel, mysql-devel, git
@@ -32,16 +37,16 @@
         chdir: /vagrant
         state: forcereinstall
     - name: change permission
-      become: yes
       shell: chmod 600 /root/.ssh/id_rsa
+      args:
+        warn: false
     - name: clone a repository
-      become: yes
       git:
-        repo: '{{repo_url}}'
+        repo: "{{repo_url}}"
         version: master
         force: yes
         clone: yes
-        dest: /opt/examples
+        dest: "{{project_path}}"
         depth: 1
         accept_hostkey: yes
         key_file: /root/.ssh/id_rsa

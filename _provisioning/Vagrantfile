@@ -4,7 +4,7 @@
 Vagrant.configure(2) do |config|
   config.vm.box = 'centos/7'
   config.vm.provider "virtualbox" do |v|
-    v.name = 'dev_project_name'
+    v.name = 'dev_linux'
     v.cpus = '1'
     v.memory = '256'
   end
