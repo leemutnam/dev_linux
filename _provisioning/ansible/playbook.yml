@@ -7,40 +7,40 @@
   gather_facts: no
   vars:
     r_name: root
-    r_password: 1234
+    r_password: abcd1234
     repo_url: git@github.com:leemutnam/dev_linux.git
     project_path: /opt/dev_linux
 
   tasks:
-    - name: change root passwd
+    - name: Change root user passwd
       user:
         name: "{{r_name}}"
         password: "{{r_password | password_hash('sha512')}}"
-    - name: edit sshd-config
+    - name: Edit sshd-config
       lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PermitRootLogin' line='PermitRootLogin yes'
     - lineinfile: dest='/etc/ssh/sshd_config' regexp='^#?PasswordAuthentication' line='PasswordAuthentication yes'
-    - name: reload ssh service
+    - name: Reload ssh service
       service: name=sshd state=reloaded
-    - name: set up ssh keygen
+    - name: Set-up ssh keygen
       shell: |
         mkdir /root/.ssh
         cp /vagrant/configuration/root/.ssh/id_rsa /root/.ssh/id_rsa
       args:
         warn: false
-    - name: install requirement packages
+    - name: Install Required Packages
       yum:
         name: gcc, python36, python3-devel, mysql-devel, git
-    - name: install python packages
+    - name: Install Python packages
       pip:
         executable: pip3
         requirements: requirements.txt
         chdir: /vagrant
         state: forcereinstall
-    - name: change permission
+    - name: Change permission
       shell: chmod 600 /root/.ssh/id_rsa
       args:
         warn: false
-    - name: clone a repository
+    - name: Clone a repository
       git:
         repo: "{{repo_url}}"
         version: master
