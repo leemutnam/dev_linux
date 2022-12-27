@@ -13,7 +13,7 @@ python-dateutil==2.7.5
 python-json-logger==0.1.10
 pytz==2018.7
 requests==2.21.0
-setuptools==40.6.3
+setuptools==65.5.1
 swagger-spec-validator==2.4.1
 uWSGI==2.0.17.1
 openpyxl==2.6.3
